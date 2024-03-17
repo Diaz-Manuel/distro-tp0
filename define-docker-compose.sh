@@ -6,6 +6,8 @@ services:
   server:
     container_name: server
     image: server:latest
+    volumes:
+      - \${PWD}/server/config.ini:/config.ini
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
@@ -24,6 +26,8 @@ networks:
 export CLIENT="
 container_name: client
 image: client:latest
+volumes:
+  - \${PWD}/client/config.yaml:/config.yaml
 entrypoint: /client
 environment:
   - CLI_ID=
