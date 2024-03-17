@@ -41,6 +41,7 @@ class Server:
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
+            client_sock.shutdown(socket.SHUT_RDWR)
             client_sock.close()
 
     def __accept_new_connection(self):
