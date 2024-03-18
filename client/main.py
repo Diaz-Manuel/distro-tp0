@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import signal
 import logging
 from common.client import Client
 from configparser import ConfigParser
@@ -60,6 +61,11 @@ def main():
         f" | loop_period: {loop_period} | log_level: {log_level}"
     )
 
+    # BLOCK SIGTERM signals to process them later.
+    # This prevents the process from being interrupted by a signal before
+    # it enters the try/except block that would free the resources that
+    # have to be allocated before the block
+    signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGTERM})
     del config_params['log_level']
     client = Client(config_params)
     client.run()

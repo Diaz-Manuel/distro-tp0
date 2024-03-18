@@ -33,6 +33,8 @@ class Client:
         signal.signal(signal.SIGTERM, signal_handler)
         msg_id = 1
         try:
+            # UNBLOCK signals now that exceptions can be caught and handled
+            signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGTERM})
             # set alarm to break out of the while loop
             signal.alarm(self.loop_lapse)
             while True:
@@ -46,12 +48,13 @@ class Client:
             logging.info(f"action: loop_finished | result: success | client_id: {self.id}")
         except (StopIteration, KeyboardInterrupt):
             self.die()
-            logging.info(f"action: loop_finished | result: success | client_id: {self.id}")            
+            logging.info(f"action: loop_finished | result: success | client_id: {self.id}")
 
 
     def die(self):
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
+        logging.info(f"action: close_socket | result: success | client_id: {self.id}")
 
 
     def connect_to_server(self):
@@ -86,3 +89,4 @@ class Client:
             self.socket.send("{}\n".format(msg).encode('utf-8'))
         except OSError as e:
             logging.error(f"action: send_message | result: fail | error: {e}")
+
