@@ -62,6 +62,7 @@ class Server:
         Function blocks until a connection to a client is made.
         Then connection created is printed and returned
         """
+        # TODO:
         # This function creates a socket that will not be closed if a signal handlers
         # raises an exception at just the wrong time. This can't be avoided even with the use
         # of context managers, the safe way to manage signals with sockets is with the use of selectors.

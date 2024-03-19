@@ -1,6 +1,7 @@
 import time
 import signal
 import logging
+from lib.serde import Message
 from lib.network import OTPSocket
 
 
@@ -20,7 +21,14 @@ class Client:
         self.loop_period = config['loop_period']
         self.id = config['client_id']
         self.socket = OTPSocket()
-
+        self.bet = {
+            'client_id': self.id,
+            'firstname': config['bet_firstname'],
+            'lastname': config['bet_lastname'],
+            'id': config['bet_id'],
+            'dob': config['bet_dob'],
+            'number': config['bet_number'],
+        }
 
     def run(self):
         """
@@ -79,7 +87,7 @@ class Client:
         If a problem arises in the communication with the client, the
         client socket will also be closed
         """
-        msg = f"[CLIENT {self.id}] Message N°{msg_id}\n"
+        msg = Message.bet(msg_id, **self.bet)
         try:
             self.socket.send(msg)
         except OSError as e:

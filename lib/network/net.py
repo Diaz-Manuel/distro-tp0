@@ -1,5 +1,5 @@
 import socket
-from lib.network import serde
+from lib.serde import Message
 from lib.network.utils import uint32_from_le, int_to_le
 
 class OTPSocket:
@@ -32,6 +32,7 @@ class OTPSocket:
         return self.socket.getpeername(*args, **kwargs)
 
     def recv_sized(self, size):
+        # TODO: add buffered reader
         buffer = []
         while len(buffer) < size:
             read_bytes = self.socket.recv(size - len(buffer))
@@ -39,17 +40,17 @@ class OTPSocket:
                 # closed socket
                 raise EOFError
             buffer.extend(read_bytes)
-        return buffer
+        return bytes(buffer)
 
     def recv(self):
         # max msg size supported is uint_32 max
         buffer = self.recv_sized(4)
         size = uint32_from_le(buffer)
         buffer = self.recv_sized(size)
-        return serde.deserialize(buffer)
+        return Message.deserialize(buffer)
 
-    def send(self, obj):
-        byte_list = serde.serialize(obj)
+    def send(self, payload):
+        byte_list = payload.serialize()
         size_bytes = int_to_le(len(byte_list))
         return self.socket.sendall(size_bytes + byte_list)
 

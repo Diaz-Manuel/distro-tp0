@@ -35,6 +35,12 @@ def initialize_config():
         config_params["loop_period"] = int(os.getenv('CLI_LOOP_PERIOD_SECONDS', config["DEFAULT"]["LOOP_PERIOD_SECONDS"]))
         config_params["log_level"] = os.getenv('CLI_LOG_LEVEL', config["DEFAULT"]["LOG_LEVEL"])
         config_params["client_id"] = os.getenv('CLI_ID', config["DEFAULT"]["CLI_ID"])
+
+        config_params["bet_firstname"] = os.environ['NOMBRE']
+        config_params["bet_lastname"] = os.environ['APELLIDO']
+        config_params["bet_id"] = os.environ['DOCUMENTO']
+        config_params["bet_dob"] = os.environ['NACIMIENTO']
+        config_params["bet_number"] = os.environ['NUMERO']
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting client".format(e))
     except ValueError as e:
