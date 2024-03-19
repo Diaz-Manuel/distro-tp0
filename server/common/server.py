@@ -1,18 +1,19 @@
-import socket
 import signal
 import logging
+from lib.network import OTPSocket
 
 
-def signal_handler(signalnum, _stack_frame):
+def signal_handler(signalnum, stack_frame):
     raise StopIteration
 
 
 class Server:
     def __init__(self, port, listen_backlog):
         # Initialize server socket
-        self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._server_socket = OTPSocket()
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
+
 
     def run(self):
         """
@@ -31,7 +32,6 @@ class Server:
                 client_sock = self.__accept_new_connection()
                 self.__handle_client_connection(client_sock)
         except StopIteration:
-            self._server_socket.shutdown(socket.SHUT_RDWR)
             self._server_socket.close()
             logging.info(f"action: close_server_socket | result: success")
 
@@ -44,16 +44,13 @@ class Server:
         client socket will also be closed
         """
         try:
-            # TODO: Modify the receive to avoid short-reads
-            msg = client_sock.recv(1024).rstrip().decode('utf-8')
+            msg = client_sock.recv()
             addr = client_sock.getpeername()
             logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-            # TODO: Modify the send to avoid short-writes
-            client_sock.send("{}\n".format(msg).encode('utf-8'))
+            client_sock.send(msg)
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:
-            client_sock.shutdown(socket.SHUT_RDWR)
             client_sock.close()
             logging.info(f"action: close_client_socket | result: success")
 
