@@ -9,7 +9,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=DEBUG
+      - LOGGING_LEVEL=INFO
     networks:
       - testing_net
   client1:
@@ -20,12 +20,12 @@ services:
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=1
-      - CLI_LOG_LEVEL=DEBUG
-      - NOMBRE=Beatriz
-      - APELLIDO=Rivadavia
-      - DOCUMENTO=34543373
-      - NACIMIENTO=1999-12-27
-      - NUMERO=25552
+      - CLI_LOG_LEVEL=INFO
+      - NOMBRE=Ariel
+      - APELLIDO=Liniers
+      - DOCUMENTO=34549220
+      - NACIMIENTO=1983-11-03
+      - NUMERO=17231
     networks:
       - testing_net
     depends_on:
@@ -38,12 +38,12 @@ services:
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=2
-      - CLI_LOG_LEVEL=DEBUG
-      - NOMBRE=Tomas
-      - APELLIDO=Gomez
-      - DOCUMENTO=42742981
-      - NACIMIENTO=1996-09-08
-      - NUMERO=1187
+      - CLI_LOG_LEVEL=INFO
+      - NOMBRE=Juan
+      - APELLIDO=Gonzalez
+      - DOCUMENTO=16262417
+      - NACIMIENTO=1972-10-10
+      - NUMERO=31116
     networks:
       - testing_net
     depends_on:
@@ -56,12 +56,12 @@ services:
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=3
-      - CLI_LOG_LEVEL=DEBUG
-      - NOMBRE=Hipólito
-      - APELLIDO=Gomez
-      - DOCUMENTO=11466741
-      - NACIMIENTO=1992-12-08
-      - NUMERO=3657
+      - CLI_LOG_LEVEL=INFO
+      - NOMBRE=Harold
+      - APELLIDO=Diaz
+      - DOCUMENTO=11943245
+      - NACIMIENTO=2002-09-17
+      - NUMERO=1072
     networks:
       - testing_net
     depends_on:
@@ -74,12 +74,12 @@ services:
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=4
-      - CLI_LOG_LEVEL=DEBUG
-      - NOMBRE=Juan
-      - APELLIDO=Rivadavia
-      - DOCUMENTO=18444133
-      - NACIMIENTO=2000-04-01
-      - NUMERO=18790
+      - CLI_LOG_LEVEL=INFO
+      - NOMBRE=María
+      - APELLIDO=Serrano
+      - DOCUMENTO=9400289
+      - NACIMIENTO=1993-03-25
+      - NUMERO=5726
     networks:
       - testing_net
     depends_on:
@@ -92,12 +92,12 @@ services:
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=5
-      - CLI_LOG_LEVEL=DEBUG
-      - NOMBRE=Ariel
-      - APELLIDO=Bedoya
-      - DOCUMENTO=36884529
-      - NACIMIENTO=1983-07-26
-      - NUMERO=29284
+      - CLI_LOG_LEVEL=INFO
+      - NOMBRE=Beatriz
+      - APELLIDO=Cardinali
+      - DOCUMENTO=42924206
+      - NACIMIENTO=1996-03-01
+      - NUMERO=1440
     networks:
       - testing_net
     depends_on:

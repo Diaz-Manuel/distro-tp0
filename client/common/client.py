@@ -22,7 +22,7 @@ class Client:
         self.id = config['client_id']
         self.socket = OTPSocket()
         self.bet = {
-            'client_id': self.id,
+            'agency': self.id,
             'firstname': config['bet_firstname'],
             'lastname': config['bet_lastname'],
             'id': config['bet_id'],
@@ -53,12 +53,12 @@ class Client:
                 time.sleep(self.loop_period)
         except TimeoutError:
             self.socket.close()
-            logging.info(f"action: timeout_detected | result: success | client_id: {self.id}")
-            logging.info(f"action: loop_finished | result: success | client_id: {self.id}")
+            logging.debug(f"action: timeout_detected | result: success | client_id: {self.id}")
+            logging.debug(f"action: loop_finished | result: success | client_id: {self.id}")
         except (StopIteration, KeyboardInterrupt):
             self.socket.close()
-            logging.info(f"action: close_socket | result: success | client_id: {self.id}")
-            logging.info(f"action: loop_finished | result: success | client_id: {self.id}")
+            logging.debug(f"action: close_socket | result: success | client_id: {self.id}")
+            logging.debug(f"action: loop_finished | result: success | client_id: {self.id}")
 
 
     def connect_to_server(self):
@@ -73,7 +73,7 @@ class Client:
     def recv_message(self):
         try:
             msg = self.socket.recv()
-            logging.info(f'action: receive_message | result: success | client_id: {self.id} | msg: {msg}')
+            logging.info(f'action: apuesta_enviada | result: success | dni: {msg.data["id"]:<8} | numero: {msg.data["number"]}')
         except OSError as e:
             self.socket.close()
             logging.error(f"action: receive_message | result: fail | client_id: {self.id} | error: {e}")

@@ -11,7 +11,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=DEBUG
+      - LOGGING_LEVEL=INFO
     networks:
       - testing_net
 
@@ -31,7 +31,7 @@ volumes:
 entrypoint: python3 /main.py
 environment:
   - CLI_ID=
-  - CLI_LOG_LEVEL=DEBUG
+  - CLI_LOG_LEVEL=INFO
   - NOMBRE=
   - APELLIDO=
   - DOCUMENTO=

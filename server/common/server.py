@@ -1,6 +1,8 @@
 import signal
 import logging
+from lib.serde import Message
 from lib.network import OTPSocket
+from .utils import Bet, store_bets, load_bets, has_won
 
 
 def signal_handler(signalnum, stack_frame):
@@ -33,7 +35,7 @@ class Server:
                 self.__handle_client_connection(client_sock)
         except StopIteration:
             self._server_socket.close()
-            logging.info(f"action: close_server_socket | result: success")
+            logging.debug(f"action: close_server_socket | result: success")
 
 
     def __handle_client_connection(self, client_sock):
@@ -46,13 +48,16 @@ class Server:
         try:
             msg = client_sock.recv()
             addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-            client_sock.send(msg)
+            logging.debug(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
+            bet = Bet(msg.data['agency'], msg.data['firstname'], msg.data['lastname'], msg.data['id'], msg.data['dob'], msg.data['number'])
+            store_bets([bet])
+            ack_msg = Message.confirmation(msg.id, msg.data['id'], msg.data['number'])
+            client_sock.send(ack_msg)
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:
             client_sock.close()
-            logging.info(f"action: close_client_socket | result: success")
+            logging.debug(f"action: close_client_socket | result: success")
 
 
     def __accept_new_connection(self):
@@ -69,7 +74,7 @@ class Server:
         # More details in https://docs.python.org/3/library/signal.html#note-on-signal-handlers-and-exceptions
 
         # Connection arrived
-        logging.info('action: accept_connections | result: in_progress')
+        logging.debug('action: accept_connections | result: in_progress')
         c, addr = self._server_socket.accept()
-        logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
+        logging.debug(f'action: accept_connections | result: success | ip: {addr[0]}')
         return c
