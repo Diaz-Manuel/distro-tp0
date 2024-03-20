@@ -51,6 +51,7 @@ class Server:
             logging.debug(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
             bet = Bet(msg.data['agency'], msg.data['firstname'], msg.data['lastname'], msg.data['id'], msg.data['dob'], msg.data['number'])
             store_bets([bet])
+            logging.info(f'action: apuesta_almacenada | result: success | dni: {msg.data['id']} | numero: {msg.data['number']}')
             ack_msg = Message.confirmation(msg.id, msg.data['id'], msg.data['number'])
             client_sock.send(ack_msg)
         except OSError as e:
