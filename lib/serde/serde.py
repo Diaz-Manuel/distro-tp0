@@ -1,6 +1,9 @@
 class Message:
     MSG_ACK = 0
     MSG_BET = 1
+    MSG_FIN = 2
+    MSG_QUERY = 3
+    MSG_WINNER = 4
 
     def __init__(self, msg_kind: int, data: list):
         self.kind = msg_kind
@@ -20,6 +23,12 @@ class Message:
             msg_class = AckPayload
         elif msg_kind == Message.MSG_BET:
             msg_class = BetPayload
+        elif msg_kind == Message.MSG_FIN:
+            msg_class = FinPayload
+        elif msg_kind == Message.MSG_QUERY:
+            msg_class = QueryPayload
+        elif msg_kind == Message.MSG_WINNER:
+            msg_class = WinnerPayload
         else:
             raise ValueError('Unsupported message type')
         # TODO: amount of bytes used for length should be variable, or at least larger
@@ -81,3 +90,51 @@ class AckPayload:
     @classmethod
     def deserialize(cls, msg: bytes):
         return cls(*msg.decode('utf-8').split(','))
+
+
+class FinPayload:
+    def __init__(self, agency: str):
+        data = {
+            'agency': agency
+        }
+        self.data = data
+
+    def serialize(self):
+        string = self.data['agency']
+        return string.encode('utf-8')
+
+    @classmethod
+    def deserialize(cls, msg: bytes):
+        return cls(msg.decode('utf-8'))
+
+
+class QueryPayload:
+    def __init__(self, agency: str):
+        data = {
+            'agency': agency
+        }
+        self.data = data
+
+    def serialize(self):
+        string = self.data['agency']
+        return string.encode('utf-8')
+
+    @classmethod
+    def deserialize(cls, msg: bytes):
+        return cls(msg.decode('utf-8'))
+
+
+class WinnerPayload:
+    def __init__(self, document: str):
+        data = {
+            'document': document
+        }
+        self.data = data
+
+    def serialize(self):
+        string = self.data['document']
+        return string.encode('utf-8')
+
+    @classmethod
+    def deserialize(cls, msg: bytes):
+        return cls(msg.decode('utf-8'))

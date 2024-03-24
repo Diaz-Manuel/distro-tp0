@@ -1,1 +1,1 @@
-from .serde import AckPayload, BetPayload, Message
+from .serde import AckPayload, BetPayload, FinPayload, QueryPayload, WinnerPayload, Message

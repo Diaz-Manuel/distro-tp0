@@ -9,9 +9,9 @@ class OTPSocket:
     for the transmission of simple key-value pairs through the network.
     keys must be strings and values must be strings or ints.
     '''
-    def __init__(self, underlying_socket=None):
-        if underlying_socket:
-            self.socket = underlying_socket
+    def __init__(self, from_socket=None):
+        if from_socket:
+            self.socket = from_socket
         else:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
