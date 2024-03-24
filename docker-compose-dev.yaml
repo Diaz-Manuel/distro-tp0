@@ -17,15 +17,11 @@ services:
     image: client:latest
     volumes:
       - ${PWD}/client/config.ini:/config.ini
+      - ${PWD}/.data/agency-1.csv:/agency.csv
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=1
       - CLI_LOG_LEVEL=INFO
-      - NOMBRE=Ariel
-      - APELLIDO=Liniers
-      - DOCUMENTO=34549220
-      - NACIMIENTO=1983-11-03
-      - NUMERO=17231
     networks:
       - testing_net
     depends_on:
@@ -35,15 +31,11 @@ services:
     image: client:latest
     volumes:
       - ${PWD}/client/config.ini:/config.ini
+      - ${PWD}/.data/agency-2.csv:/agency.csv
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=2
       - CLI_LOG_LEVEL=INFO
-      - NOMBRE=Juan
-      - APELLIDO=Gonzalez
-      - DOCUMENTO=16262417
-      - NACIMIENTO=1972-10-10
-      - NUMERO=31116
     networks:
       - testing_net
     depends_on:
@@ -53,15 +45,11 @@ services:
     image: client:latest
     volumes:
       - ${PWD}/client/config.ini:/config.ini
+      - ${PWD}/.data/agency-3.csv:/agency.csv
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=3
       - CLI_LOG_LEVEL=INFO
-      - NOMBRE=Harold
-      - APELLIDO=Diaz
-      - DOCUMENTO=11943245
-      - NACIMIENTO=2002-09-17
-      - NUMERO=1072
     networks:
       - testing_net
     depends_on:
@@ -71,15 +59,11 @@ services:
     image: client:latest
     volumes:
       - ${PWD}/client/config.ini:/config.ini
+      - ${PWD}/.data/agency-4.csv:/agency.csv
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=4
       - CLI_LOG_LEVEL=INFO
-      - NOMBRE=María
-      - APELLIDO=Serrano
-      - DOCUMENTO=9400289
-      - NACIMIENTO=1993-03-25
-      - NUMERO=5726
     networks:
       - testing_net
     depends_on:
@@ -89,15 +73,11 @@ services:
     image: client:latest
     volumes:
       - ${PWD}/client/config.ini:/config.ini
+      - ${PWD}/.data/agency-5.csv:/agency.csv
     entrypoint: python3 /main.py
     environment:
       - CLI_ID=5
       - CLI_LOG_LEVEL=INFO
-      - NOMBRE=Beatriz
-      - APELLIDO=Cardinali
-      - DOCUMENTO=42924206
-      - NACIMIENTO=1996-03-01
-      - NUMERO=1440
     networks:
       - testing_net
     depends_on:
