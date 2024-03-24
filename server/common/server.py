@@ -1,6 +1,6 @@
 import signal
 import logging
-from lib.serde import MessageBatch, AckMessage
+from lib.serde import Message, AckPayload
 from lib.network import OTPSocket
 from .utils import Bet, store_bets, load_bets, has_won
 
@@ -54,9 +54,9 @@ class Server:
             batch = []
             for bet in bets:
                 logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}')
-                msg = AckMessage(bet.document, bet.number)
-                batch.append(msg)
-            batch_msg = MessageBatch(MessageBatch.MSG_ACK, batch)
+                payload = AckPayload(bet.document, bet.number)
+                batch.append(payload)
+            batch_msg = Message(Message.MSG_ACK, batch)
             client_sock.send(batch_msg)
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")

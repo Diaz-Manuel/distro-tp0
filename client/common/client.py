@@ -2,7 +2,7 @@ import time
 import signal
 import logging
 from io import BufferedReader
-from lib.serde import MessageBatch
+from lib.serde import Message
 from lib.network import OTPSocket
 
 def signal_handler(signalnum, _stack_frame):
@@ -59,7 +59,7 @@ class Client:
             # the file is newline terminated so there's no need to consume the last element after the last iteration
             self.buffer = bets[-1]
             bets = bets[:-1]
-            batch = MessageBatch.from_csv(bets, self.id)
+            batch = Message.from_csv(bets, self.id)
             self.connect_to_server()
             self.send_message(batch)
             self.recv_message()

@@ -1,5 +1,5 @@
 import socket
-from lib.serde import MessageBatch
+from lib.serde import Message
 from lib.network.utils import uint32_from_le, int_to_le
 
 class OTPSocket:
@@ -47,7 +47,7 @@ class OTPSocket:
         buffer = self.recv_sized(4)
         size = uint32_from_le(buffer)
         buffer = self.recv_sized(size)
-        return MessageBatch.deserialize(buffer)
+        return Message.deserialize(buffer)
 
     def send(self, payload):
         byte_list = payload.serialize()

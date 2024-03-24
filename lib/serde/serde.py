@@ -1,6 +1,4 @@
-import logging
-
-class MessageBatch:
+class Message:
     MSG_ACK = 0
     MSG_BET = 1
 
@@ -18,10 +16,10 @@ class MessageBatch:
     @classmethod
     def deserialize(cls, stream: bytes):
         msg_kind = stream[0]
-        if msg_kind == MessageBatch.MSG_ACK:
-            msg_class = AckMessage
-        elif msg_kind == MessageBatch.MSG_BET:
-            msg_class = BetMessage
+        if msg_kind == Message.MSG_ACK:
+            msg_class = AckPayload
+        elif msg_kind == Message.MSG_BET:
+            msg_class = BetPayload
         else:
             raise ValueError('Unsupported message type')
         # TODO: amount of bytes used for length should be variable, or at least larger
@@ -38,11 +36,11 @@ class MessageBatch:
 
     @classmethod
     def from_csv(cls, bets: list[bytes], agency):
-        parsed_bets = [BetMessage.deserialize(bet, agency) for bet in bets]
-        return cls(MessageBatch.MSG_BET, parsed_bets)
+        parsed_bets = [BetPayload.deserialize(bet, agency) for bet in bets]
+        return cls(Message.MSG_BET, parsed_bets)
 
 
-class BetMessage:
+class BetPayload:
     def __init__(self, agency: int, first_name: str, last_name: str, document: str, birthdate: str, number: str):
         data = {
             'agency': agency,
@@ -68,7 +66,7 @@ class BetMessage:
             return cls(*msg.decode('utf-8').split(','))
 
 
-class AckMessage:
+class AckPayload:
     def __init__(self, document: str, number: str):
         data = {
             'document': document,

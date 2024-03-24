@@ -1,1 +1,1 @@
-from .serde import AckMessage, BetMessage, MessageBatch
+from .serde import AckPayload, BetPayload, Message
