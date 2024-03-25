@@ -1,1 +1,1 @@
-from .net import OTPSocket
+from .net import MINTSocket

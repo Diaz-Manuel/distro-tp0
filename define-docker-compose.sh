@@ -44,12 +44,13 @@ depends_on:
 printf 'How many clients do you want to define: '
 read clients
 export clients
+# tell server how many agencies need to submit bets before showing lottery results
 TEMPLATE=$(printf "$TEMPLATE" | yq '.services.server.environment[2] += strenv(clients)')
 export CLIENTID
 for CLIENTID in $(seq $clients)
   # set clientID
   do export NEW_CLIENT=$(printf "$CLIENT" | yq '.container_name += strenv(CLIENTID) | .environment[0] += strenv(CLIENTID)')
-  # attack bets csv file to agency
+  # mount bets csv file to agency
   NEW_CLIENT=$(printf "$NEW_CLIENT" | yq '.volumes[1] += strenv(CLIENTID) + ".csv:/agency.csv"')
   # append client to template
   TEMPLATE=$(printf "$NEW_CLIENT" | yq 'env(TEMPLATE) * {"services": {"client" + strenv(CLIENTID): .}}')

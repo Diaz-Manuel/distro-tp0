@@ -3,7 +3,7 @@ import signal
 import logging
 from io import BufferedReader
 from lib.serde import Message, FinPayload, QueryPayload
-from lib.network import OTPSocket
+from lib.network import MINTSocket
 
 def signal_handler(signalnum, _stack_frame):
     if signalnum == signal.SIGALRM:
@@ -21,14 +21,12 @@ class Client:
         self.loop_period = config['loop_period']
         self.id = config['client_id']
         self.batch_max_size = config['batch_max_size']
-        self.socket = OTPSocket()
+        self.socket = MINTSocket()
 
     def run(self):
         """
-        Client message loop
-
-        Send messages to the server until a time threshold is met
-        Autoincrement msg_id after each iteration to tell messages apart
+        Client top level logic for handling exceptions, cleanup resources
+        and querying winners once the message loop finishes
         """
         signal.signal(signal.SIGALRM, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
@@ -45,6 +43,10 @@ class Client:
 
 
     def send_bets_to_server(self, bets_reader):
+        """
+        Client message loop
+        Send messages to the server until a time threshold is met
+        """
         self.buffer = b''
         try:
             # UNBLOCK signals now that exceptions can be caught and handled
@@ -77,6 +79,8 @@ class Client:
         self.connect_to_server()
         self.send_message(Message(Message.MSG_FIN, [FinPayload(self.id)]))
         self.socket.close()
+        # this could be done in a single connection, or even a single message
+        # leaving it this way to match the TP0 requirements
         self.connect_to_server()
         self.send_message(Message(Message.MSG_QUERY, [QueryPayload(self.id)]))
         self.recv_winner_message()
@@ -85,7 +89,7 @@ class Client:
 
     def connect_to_server(self):
         try:
-            self.socket = OTPSocket()
+            self.socket = MINTSocket()
             self.socket.connect((self.server_host, self.server_port))
         except Exception as e:
             logging.error(f"action: connect | result: fail | client_id: {self.id} | error: {e}")

@@ -1,7 +1,7 @@
 import signal
 import logging
 import multiprocessing as mp
-from lib.network import OTPSocket
+from lib.network import MINTSocket
 from lib.serde import Message, AckPayload, WinnerPayload
 from .utils import Bet, store_bets, load_bets, has_won
 
@@ -12,9 +12,9 @@ def signal_handler(signalnum, stack_frame):
 class Server:
     def __init__(self, port, listen_backlog, agency_count):
         # Initialize server socket
-        self._server_socket = OTPSocket()
-        self._server_socket.bind(('', port))
-        self._server_socket.listen(listen_backlog)
+        self.server_socket = MINTSocket()
+        self.server_socket.bind(('', port))
+        self.server_socket.listen(listen_backlog)
         self.betsfile_lock = mp.Lock()
         # Use a semaphore to track the amount of agencies that are ready for the lottery
         self.agency_tracker = mp.Semaphore(agency_count - 1)
@@ -23,14 +23,13 @@ class Server:
 
     def run(self):
         """
-        Dummy Server loop
+        Multiprocess Server loop
 
         Server that accept a new connections and establishes a
-        communication with a client. After client with communucation
-        finishes, servers starts to accept new connections again
+        communication with a client. The established connection is dispatched
+        for a new process to handle the messages.
         """
         signal.signal(signal.SIGTERM, signal_handler)
-        # TODO: Implement Read-write / Shared-exclusive locks.
         try:
             # UNBLOCK signals now that exceptions can be caught and handled
             signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGTERM})
@@ -38,7 +37,7 @@ class Server:
                 client_sock = self.accept_new_connection()
                 dispatch_connection(client_sock, self.agency_tracker, self.lottery_ready, self.betsfile_lock)
         except StopIteration:
-            self._server_socket.close()
+            self.server_socket.close()
             logging.debug(f"action: close_server_socket | result: success")
             for (_, socket) in self.waiting_agencies:
                 socket.close()
@@ -63,13 +62,13 @@ class Server:
 
         # Connection arrived
         logging.debug('action: accept_connections | result: in_progress')
-        c, addr = self._server_socket.accept()
+        socket, addr = self.server_socket.accept()
         logging.debug(f'action: accept_connections | result: success | ip: {addr[0]}')
-        return c
+        return socket
 
 
 class ClientHandler:
-    def __init__(self, socket: OTPSocket, agency_tracker: mp.Semaphore, lottery_ready: mp.Event, betsfile_lock: mp.Lock):
+    def __init__(self, socket: MINTSocket, agency_tracker: mp.Semaphore, lottery_ready: mp.Event, betsfile_lock: mp.Lock):
         # Initialize server socket
         self.socket = socket
         self.agency_tracker = agency_tracker
@@ -104,10 +103,12 @@ class ClientHandler:
             return e
 
     def handle_bet_message(self, msg):
+        """
+        Read new bets from client, store them and notify the client once all of them have been stored
+        """
         bets = [Bet(**msg.data) for msg in msg.data]
-        self.betsfile_lock.acquire()
-        store_bets(bets)
-        self.betsfile_lock.release()
+        with self.betsfile_lock:
+            store_bets(bets)
         msg = []
         for bet in bets:
             logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}')
@@ -117,16 +118,24 @@ class ClientHandler:
         self.socket.send(batch_msg)
 
     def handle_fin_message(self, _):
+        """
+        Receive FIN message from client indicating no more bets will be sent by the client.
+        If this is the last agency no notify, run the lottery which would allow any agency to query the winners.
+        """
+        # If the Semaphore blocks, it means that all other agencies have already sent their FIN messages.
+        # Since this was the last agency, run the lottery and notify blocked queries by setting an Event
         all_agencies_finished = not self.agency_tracker.acquire(block=False)
         if all_agencies_finished:
             logging.info(f'action: sorteo | result: success')
             self.lottery_ready.set()
-        else:
-            logging.info(f'action: falta una agencia menos')
 
     def handle_query_message(self, msg):
-        agency = int(msg.data[0].data['agency'])
+        """
+        Receives QUERY message from an agency asking about the lottery winners.
+        The query will remain unanswered until all agencies have finished betting.
+        """
         self.lottery_ready.wait()
+        agency = int(msg.data[0].data['agency'])
         winners = self.get_winners(agency)
         msg = [WinnerPayload(winner) for winner in winners]
         batch_msg = Message(Message.MSG_WINNER, msg)
@@ -139,6 +148,9 @@ class ClientHandler:
             return [bet.document for bet in load_bets() if has_won(bet) and bet.agency == agency]
 
 
-def dispatch_connection(client_sock: OTPSocket, agency_tracker: mp.Semaphore, lottery_ready: mp.Event, betsfile_lock: mp.Lock):
+def dispatch_connection(client_sock: MINTSocket, agency_tracker: mp.Semaphore, lottery_ready: mp.Event, betsfile_lock: mp.Lock):
+    """
+    Start a new process to handle a client connection.
+    """
     handler = ClientHandler(client_sock, agency_tracker, lottery_ready, betsfile_lock)
     mp.Process(target=ClientHandler.run, args=[handler]).start()
