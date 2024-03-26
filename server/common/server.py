@@ -1,18 +1,21 @@
-import socket
 import signal
 import logging
+from lib.serde import Message
+from lib.network import OTPSocket
+from .utils import Bet, store_bets, load_bets, has_won
 
 
-def signal_handler(signalnum, _stack_frame):
+def signal_handler(signalnum, stack_frame):
     raise StopIteration
 
 
 class Server:
     def __init__(self, port, listen_backlog):
         # Initialize server socket
-        self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._server_socket = OTPSocket()
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
+
 
     def run(self):
         """
@@ -31,9 +34,8 @@ class Server:
                 client_sock = self.__accept_new_connection()
                 self.__handle_client_connection(client_sock)
         except StopIteration:
-            self._server_socket.shutdown(socket.SHUT_RDWR)
             self._server_socket.close()
-            logging.info(f"action: close_server_socket | result: success")
+            logging.debug(f"action: close_server_socket | result: success")
 
 
     def __handle_client_connection(self, client_sock):
@@ -44,18 +46,19 @@ class Server:
         client socket will also be closed
         """
         try:
-            # TODO: Modify the receive to avoid short-reads
-            msg = client_sock.recv(1024).rstrip().decode('utf-8')
+            msg = client_sock.recv()
             addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-            # TODO: Modify the send to avoid short-writes
-            client_sock.send("{}".format(msg).encode('utf-8'))
+            logging.debug(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
+            bet = Bet(msg.data['agency'], msg.data['firstname'], msg.data['lastname'], msg.data['id'], msg.data['dob'], msg.data['number'])
+            store_bets([bet])
+            logging.info(f'action: apuesta_almacenada | result: success | dni: {msg.data['id']} | numero: {msg.data['number']}')
+            ack_msg = Message.confirmation(msg.id, msg.data['id'], msg.data['number'])
+            client_sock.send(ack_msg)
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:
-            client_sock.shutdown(socket.SHUT_RDWR)
             client_sock.close()
-            logging.info(f"action: close_client_socket | result: success")
+            logging.debug(f"action: close_client_socket | result: success")
 
 
     def __accept_new_connection(self):
@@ -65,13 +68,14 @@ class Server:
         Function blocks until a connection to a client is made.
         Then connection created is printed and returned
         """
+        # TODO:
         # This function creates a socket that will not be closed if a signal handlers
         # raises an exception at just the wrong time. This can't be avoided even with the use
         # of context managers, the safe way to manage signals with sockets is with the use of selectors.
         # More details in https://docs.python.org/3/library/signal.html#note-on-signal-handlers-and-exceptions
 
         # Connection arrived
-        logging.info('action: accept_connections | result: in_progress')
+        logging.debug('action: accept_connections | result: in_progress')
         c, addr = self._server_socket.accept()
-        logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
+        logging.debug(f'action: accept_connections | result: success | ip: {addr[0]}')
         return c
