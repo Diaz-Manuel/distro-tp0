@@ -10,7 +10,6 @@ services:
       - LOGGING_LEVEL=DEBUG
     networks:
       - testing_net
-
   client1:
     container_name: client1
     image: client:latest
@@ -22,7 +21,6 @@ services:
       - testing_net
     depends_on:
       - server
-
   client2:
     container_name: client2
     image: client:latest
@@ -34,7 +32,6 @@ services:
       - testing_net
     depends_on:
       - server
-
 networks:
   testing_net:
     ipam:
