@@ -16,5 +16,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -mod vendor -o bin/client github.com/Diaz-
 
 FROM busybox:latest
 COPY --from=builder /build/bin/client /client
-COPY ./client/config.yaml /config.yaml
 ENTRYPOINT ["/bin/sh"]
