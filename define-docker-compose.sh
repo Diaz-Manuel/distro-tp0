@@ -12,6 +12,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=INFO
+      - SERVER_AGENCY_COUNT=
     networks:
       - testing_net
 
@@ -42,6 +43,8 @@ depends_on:
 
 printf 'How many clients do you want to define: '
 read clients
+export clients
+TEMPLATE=$(printf "$TEMPLATE" | yq '.services.server.environment[2] += strenv(clients)')
 export CLIENTID
 for CLIENTID in $(seq $clients)
   # set clientID

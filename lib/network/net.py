@@ -1,5 +1,5 @@
 import socket
-from lib.serde import MessageBatch
+from lib.serde import Message
 from lib.network.utils import uint32_from_le, int_to_le
 
 class OTPSocket:
@@ -9,9 +9,9 @@ class OTPSocket:
     for the transmission of simple key-value pairs through the network.
     keys must be strings and values must be strings or ints.
     '''
-    def __init__(self, underlying_socket=None):
-        if underlying_socket:
-            self.socket = underlying_socket
+    def __init__(self, from_socket=None):
+        if from_socket:
+            self.socket = from_socket
         else:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -47,7 +47,7 @@ class OTPSocket:
         buffer = self.recv_sized(4)
         size = uint32_from_le(buffer)
         buffer = self.recv_sized(size)
-        return MessageBatch.deserialize(buffer)
+        return Message.deserialize(buffer)
 
     def send(self, payload):
         byte_list = payload.serialize()
