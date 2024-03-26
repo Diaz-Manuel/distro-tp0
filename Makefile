@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 PWD := $(shell pwd)
 
-GIT_REMOTE = github.com/7574-sistemas-distribuidos/docker-compose-init
+GIT_REMOTE = github.com/Diaz-Manuel/distro-tp0
 
 default: build
 
@@ -12,7 +12,7 @@ deps:
 	go mod vendor
 
 build: deps
-	GOOS=linux go build -o bin/client github.com/7574-sistemas-distribuidos/docker-compose-init/client
+	GOOS=linux go build -o bin/client github.com/Diaz-Manuel/distro-tp0/client
 .PHONY: build
 
 docker-image:
