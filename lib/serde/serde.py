@@ -1,4 +1,9 @@
+from lib.utils import uint32_from_be, int_to_be
 class Message:
+    """
+    Generic Batch Message where all of the items in a given batch share the same type.
+    Decouples the network layer from the different kinds of Messages specific to the Lottery
+    """
     MSG_ACK = 0
     MSG_BET = 1
     MSG_FIN = 2
@@ -31,17 +36,15 @@ class Message:
             msg_class = WinnerPayload
         else:
             raise ValueError('Unsupported message type')
-        # TODO: amount of bytes used for length should be variable, or at least larger
         offset = 1
         items = []
         while offset < len(stream):
-            item_size = stream[offset]
-            offset += 1
+            item_size = uint32_from_be(stream[offset:offset+4])
+            offset += 4
             deserialized = msg_class.deserialize(stream[offset:offset+item_size])
             items.append(deserialized)
             offset += item_size
         return cls(msg_kind, items)
-
 
     @classmethod
     def from_csv(cls, bets: list[bytes], agency):
@@ -50,6 +53,9 @@ class Message:
 
 
 class BetPayload:
+    """
+    A kind of Message used by agencies to notify the server of a new bet
+    """
     def __init__(self, agency: int, first_name: str, last_name: str, document: str, birthdate: str, number: str):
         data = {
             'agency': agency,
@@ -76,6 +82,9 @@ class BetPayload:
 
 
 class AckPayload:
+    """
+    A kind of Message used by servers to notify agencies that a bet has saved
+    """
     def __init__(self, document: str, number: str):
         data = {
             'document': document,
@@ -93,6 +102,9 @@ class AckPayload:
 
 
 class FinPayload:
+    """
+    A kind of Message used by agencies to notify the server that the agency won't make any more bets
+    """
     def __init__(self, agency: str):
         data = {
             'agency': agency
@@ -109,6 +121,9 @@ class FinPayload:
 
 
 class QueryPayload:
+    """
+    A kind of Message used by agencies to query the server for the winners of the lottery
+    """
     def __init__(self, agency: str):
         data = {
             'agency': agency
@@ -125,6 +140,9 @@ class QueryPayload:
 
 
 class WinnerPayload:
+    """
+    A kind of Message used by the server to notify the agencies of their winning bets
+    """
     def __init__(self, document: str):
         data = {
             'document': document

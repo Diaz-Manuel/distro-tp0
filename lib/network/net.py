@@ -1,13 +1,13 @@
 import socket
 from lib.serde import Message
-from lib.network.utils import uint32_from_le, int_to_le
+from lib.utils import uint32_from_be, int_to_be
 
-class OTPSocket:
+class MINTSocket:
     '''
     Wrapper for TCPSocket.
     Handles short-read, short-write issues and delegates de/serialization
-    for the transmission of simple key-value pairs through the network.
-    keys must be strings and values must be strings or ints.
+    of messages to be sent to (or received from) the peer.
+    Mint Is Not TCP.
     '''
     def __init__(self, from_socket=None):
         if from_socket:
@@ -23,7 +23,7 @@ class OTPSocket:
 
     def accept(self, *args, **kwargs):
         new_soc, addr = self.socket.accept(*args, **kwargs)
-        return OTPSocket(new_soc), addr
+        return MINTSocket(new_soc), addr
 
     def connect(self, *args, **kwargs):
         return self.socket.connect(*args, **kwargs)
@@ -32,7 +32,11 @@ class OTPSocket:
         return self.socket.getpeername(*args, **kwargs)
 
     def recv_sized(self, size):
-        # TODO: add buffered reader
+        """Wrapper for Socket.recv, loops until all bytes have been read
+        to avoid handling short-reads everywhere.
+        """
+        # not very performant to do a syscall for <size> bytes
+        # should read as much as possible into a buffer instead
         buffer = []
         while len(buffer) < size:
             read_bytes = self.socket.recv(size - len(buffer))
@@ -43,15 +47,17 @@ class OTPSocket:
         return bytes(buffer)
 
     def recv(self):
+        """
+        """
         # max msg size supported is uint_32 max
         buffer = self.recv_sized(4)
-        size = uint32_from_le(buffer)
+        size = uint32_from_be(buffer)
         buffer = self.recv_sized(size)
         return Message.deserialize(buffer)
 
     def send(self, payload):
         byte_list = payload.serialize()
-        size_bytes = int_to_le(len(byte_list))
+        size_bytes = int_to_be(len(byte_list))
         return self.socket.sendall(size_bytes + byte_list)
 
 
