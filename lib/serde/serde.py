@@ -1,56 +1,85 @@
-MSG_ACK = 0
-MSG_BET = 1
+import logging
 
-class Message:
-    # 0        8            ?                        ?
-    # |--------|------------|------------------------|
-    # |msg_type| str(msg_id), payload...             |
-    # |--------|------------|------------------------|
+class MessageBatch:
+    MSG_ACK = 0
+    MSG_BET = 1
 
-    def __init__(self, msg_type, msg_id, **kwargs):
-        self.id: int = msg_id
-        self.type: int = msg_type
-        self.data: dict = kwargs
-
-    def __repr__(self):
-        if self.type == MSG_ACK:
-                return f'{{"type": MSG_ACK, "id": {self.id}, "DNI": {self.data["id"]}, "NUMERO": {self.data["number"]}}}'
-        elif self.type == MSG_BET:
-                return f'{{"type": MSG_DATA, "id": {self.id}, "agency": "{self.data["agency"]}", ' \
-                    f'"NOMBRE": "{self.data["firstname"]}", "APELLIDO": "{self.data["lastname"]}", ' \
-                    f'"DOCUMENTO": "{self.data["id"]}", "NACIMIENTO": "{self.data["dob"]}", "NUMERO": "{self.data["number"]}"}}'
-
-    @classmethod
-    def confirmation(cls, msg_id, gambler_id: str, number: str):
-        kwargs = {
-            'id': gambler_id,
-            'number': number
-        }
-        return cls(MSG_ACK, msg_id, **kwargs)
-
-    @classmethod
-    def bet(cls, msg_id: int, agency: int, firstname: str, lastname: str, id: str, dob: str, number: str):
-        kwargs = {
-            'agency': agency,
-            'firstname': firstname,
-            'lastname': lastname,
-            'id': id,
-            'dob': dob,
-            'number': number
-        }
-        return cls(MSG_BET, msg_id, **kwargs)
+    def __init__(self, msg_kind: int, data: list):
+        self.kind = msg_kind
+        self.data = data
 
     def serialize(self):
-        if self.type == MSG_ACK:
-                string = f"{self.id},{self.data['id']},{self.data['number']}"
-        elif self.type == MSG_BET:
-                string = f"{self.id},{self.data['agency']},{self.data['firstname']},{self.data['lastname']},{self.data['id']},{self.data['dob']},{self.data['number']}"
-        return bytes([self.type]) + string.encode('utf-8')
+        accumulator = b''
+        for msg in self.data:
+            msg = msg.serialize() 
+            accumulator += len(msg).to_bytes(1, 'big') + msg
+        return self.kind.to_bytes(1, 'big') + accumulator
+
+    @classmethod
+    def deserialize(cls, stream: bytes):
+        msg_kind = stream[0]
+        if msg_kind == MessageBatch.MSG_ACK:
+            msg_class = AckMessage
+        elif msg_kind == MessageBatch.MSG_BET:
+            msg_class = BetMessage
+        else:
+            raise ValueError('Unsupported message type')
+        # TODO: amount of bytes used for length should be variable, or at least larger
+        offset = 1
+        items = []
+        while offset < len(stream):
+            item_size = stream[offset]
+            offset += 1
+            deserialized = msg_class.deserialize(stream[offset:offset+item_size])
+            items.append(deserialized)
+            offset += item_size
+        return cls(msg_kind, items)
+
+
+    @classmethod
+    def from_csv(cls, bets: list[bytes], agency):
+        parsed_bets = [BetMessage.deserialize(bet, agency) for bet in bets]
+        return cls(MessageBatch.MSG_BET, parsed_bets)
+
+
+class BetMessage:
+    def __init__(self, agency: int, first_name: str, last_name: str, document: str, birthdate: str, number: str):
+        data = {
+            'agency': agency,
+            'first_name': first_name,
+            'last_name': last_name,
+            'document': document,
+            'birthdate': birthdate,
+            'number': number
+        }
+        self.data = data
+
+    def serialize(self):
+        string = f"{self.data['agency']},{self.data['first_name']},{self.data['last_name']},{self.data['document']},{self.data['birthdate']},{self.data['number']}"
+        return string.encode('utf-8')
+
+    @classmethod
+    def deserialize(cls, msg: bytes, agency=None):
+        if agency:
+            # agency passed as argument when reading from csv
+            return cls(agency, *msg.decode('utf-8').split(','))
+        else:
+            # when not reading from csv, agency is sent as part of the message
+            return cls(*msg.decode('utf-8').split(','))
+
+
+class AckMessage:
+    def __init__(self, document: str, number: str):
+        data = {
+            'document': document,
+            'number': number
+        }
+        self.data = data
+
+    def serialize(self):
+        string = f"{self.data['document']},{self.data['number']}"
+        return string.encode('utf-8')
 
     @classmethod
     def deserialize(cls, msg: bytes):
-        msg_type = msg[0]
-        if msg_type == MSG_ACK:
-            return cls.confirmation(*msg[1:].decode('utf-8').split(','))
-        elif msg_type == MSG_BET:
-            return cls.bet(*msg[1:].decode('utf-8').split(','))  
+        return cls(*msg.decode('utf-8').split(','))

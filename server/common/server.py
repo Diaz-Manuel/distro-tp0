@@ -1,6 +1,6 @@
 import signal
 import logging
-from lib.serde import Message
+from lib.serde import MessageBatch, AckMessage
 from lib.network import OTPSocket
 from .utils import Bet, store_bets, load_bets, has_won
 
@@ -46,14 +46,18 @@ class Server:
         client socket will also be closed
         """
         try:
-            msg = client_sock.recv()
+            batch = client_sock.recv()
             addr = client_sock.getpeername()
-            logging.debug(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-            bet = Bet(msg.data['agency'], msg.data['firstname'], msg.data['lastname'], msg.data['id'], msg.data['dob'], msg.data['number'])
-            store_bets([bet])
-            logging.info(f'action: apuesta_almacenada | result: success | dni: {msg.data['id']} | numero: {msg.data['number']}')
-            ack_msg = Message.confirmation(msg.id, msg.data['id'], msg.data['number'])
-            client_sock.send(ack_msg)
+            logging.debug(f'action: receive_message | result: success | ip: {addr[0]} | msg: {batch}')
+            bets = [Bet(**msg.data) for msg in batch.data]
+            store_bets(bets)
+            batch = []
+            for bet in bets:
+                logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}')
+                msg = AckMessage(bet.document, bet.number)
+                batch.append(msg)
+            batch_msg = MessageBatch(MessageBatch.MSG_ACK, batch)
+            client_sock.send(batch_msg)
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:

@@ -35,12 +35,7 @@ def initialize_config():
         config_params["loop_period"] = int(os.getenv('CLI_LOOP_PERIOD_SECONDS', config["DEFAULT"]["LOOP_PERIOD_SECONDS"]))
         config_params["log_level"] = os.getenv('CLI_LOG_LEVEL', config["DEFAULT"]["LOG_LEVEL"])
         config_params["client_id"] = os.getenv('CLI_ID', config["DEFAULT"]["CLI_ID"])
-
-        config_params["bet_firstname"] = os.environ['NOMBRE']
-        config_params["bet_lastname"] = os.environ['APELLIDO']
-        config_params["bet_id"] = os.environ['DOCUMENTO']
-        config_params["bet_dob"] = os.environ['NACIMIENTO']
-        config_params["bet_number"] = os.environ['NUMERO']
+        config_params["batch_max_size"] = int(os.getenv('CLI_BATCH_MAX_SIZE', config["DEFAULT"]["BATCH_MAX_SIZE"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting client".format(e))
     except ValueError as e:
@@ -54,6 +49,7 @@ def main():
     server_host = config_params["server_host"]
     server_port = config_params["server_port"]
     client_id = config_params["client_id"]
+    batch_max_size = config_params["batch_max_size"]
     loop_lapse = config_params["loop_lapse"]
     loop_period = config_params["loop_period"]
     log_level = config_params["log_level"]
@@ -62,7 +58,7 @@ def main():
 
     # Log config parameters at the beginning of the program to verify the configuration
     # of the component
-    logging.debug(f"action: config | result: success | client_id: {client_id}"
+    logging.debug(f"action: config | result: success | client_id: {client_id} | batch_max_size: {batch_max_size}"
         f" | server_address: {server_host}:{server_port} | loop_lapse: {loop_lapse}"
         f" | loop_period: {loop_period} | log_level: {log_level}"
     )
