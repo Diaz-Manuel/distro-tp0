@@ -1,5 +1,20 @@
 # TP0: Docker + Comunicaciones + Concurrencia
 
+## Ejercicios
+Cada ejercicio tiene una branch dedicada, y hay un PR de cada branch hacia su branch inmediatamente anterior
+para facilitar la revisión de cambios.
+Dejo registrado acá el último commit de cada branch, así este commit también fija el estado de cada una de 
+las branches.
+Ej1: [8f36512](https://github.com/Diaz-Manuel/distro-tp0/commit/8f36512481f8bc746c490d4ce0c268ea48df32db)
+Ej1.1: [3060050](https://github.com/Diaz-Manuel/distro-tp0/commit/3060050bb202c7460f7ee39199e2494652cb2a29)
+Ej2: [be51cb7](https://github.com/Diaz-Manuel/distro-tp0/commit/be51cb75cf811886c3bbc76e0a6ea3309f79a472)
+Ej3: [5e92298](https://github.com/Diaz-Manuel/distro-tp0/commit/5e9229804d9615b4e642f5cfcc65d76cf017c5b6)
+Ej4: [0f2152e](https://github.com/Diaz-Manuel/distro-tp0/commit/0f2152e7506d9b8c2f58c0d71b97c95ec6772358)
+Ej5: [7358028](https://github.com/Diaz-Manuel/distro-tp0/commit/735802823195cdf5bf9e3722afe826c38828f3d1)
+Ej6: [b1c2daa](https://github.com/Diaz-Manuel/distro-tp0/commit/b1c2daad6c4ee6b415c54cc8d7d8ee73e80d797d)
+Ej7: [f9f35a4](https://github.com/Diaz-Manuel/distro-tp0/commit/f9f35a49089a0d2efbeae60cb86062fcba4f765c)
+Ej8: [bd229c5](https://github.com/Diaz-Manuel/distro-tp0/commit/bd229c50375be4783949cdc7a02f33f7f531dc9b)
+
 ## Protocolo de Comunicación
 ### Modulos
 El protocolo de comunicación está compuesto de 2 partes, un módulo de de/serialización de mensajes y
