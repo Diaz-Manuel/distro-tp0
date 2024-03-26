@@ -16,8 +16,8 @@ services:
     container_name: client1
     image: client:latest
     volumes:
-      - ${PWD}/client/config.yaml:/config.yaml
-    entrypoint: /client
+      - ${PWD}/client/config.ini:/config.ini
+    entrypoint: python3 /main.py
     environment:
       - CLI_ID=1
       - CLI_LOG_LEVEL=DEBUG
@@ -29,8 +29,8 @@ services:
     container_name: client2
     image: client:latest
     volumes:
-      - ${PWD}/client/config.yaml:/config.yaml
-    entrypoint: /client
+      - ${PWD}/client/config.ini:/config.ini
+    entrypoint: python3 /main.py
     environment:
       - CLI_ID=2
       - CLI_LOG_LEVEL=DEBUG

@@ -27,8 +27,8 @@ export CLIENT="
 container_name: client
 image: client:latest
 volumes:
-  - \${PWD}/client/config.yaml:/config.yaml
-entrypoint: /client
+  - \${PWD}/client/config.ini:/config.ini
+entrypoint: python3 /main.py
 environment:
   - CLI_ID=
   - CLI_LOG_LEVEL=DEBUG

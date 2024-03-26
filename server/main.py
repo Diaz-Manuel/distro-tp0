@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from configparser import ConfigParser
-from common.server import Server
-import logging
 import os
+import signal
+import logging
+from common.server import Server
+from configparser import ConfigParser
 
 
 def initialize_config():
@@ -47,6 +48,12 @@ def main():
     logging.debug(f"action: config | result: success | port: {port} | "
                   f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
+
+    # BLOCK SIGTERM signals to process them later.
+    # This prevents the process from being interrupted by a signal before
+    # it enters the try/except block that would free the resources that
+    # have to be allocated before the block
+    signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGTERM})
     # Initialize server and start server loop
     server = Server(port, listen_backlog)
     server.run()
